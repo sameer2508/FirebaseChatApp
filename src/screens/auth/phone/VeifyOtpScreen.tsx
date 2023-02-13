@@ -1,12 +1,12 @@
 import {View, Text, Button, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
-import InputField from '../../components/InputField';
+import InputField from '../../../components/InputField';
 
 export default function VeifyOtpScreen({navigation, route}) {
   const [otp, setOtp] = useState('');
 
   async function VerifyOtp(otp: string) {
-    console.log(`otp: ${otp}`)
+    console.log(`otp: ${otp}`);
     try {
       await route.params?.confirmation.confirm(otp);
       navigation.navigate('LaunchScreen');

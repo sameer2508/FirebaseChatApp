@@ -1,53 +1,105 @@
+
+import React, {useState} from 'react';
 import {
   View,
   Text,
   Button,
-  ToastAndroid,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
+  ToastAndroid,
 } from 'react-native';
-import React, {useState, useContext, useEffect} from 'react';
 
 import auth from '@react-native-firebase/auth';
 import {} from '@react-native-material/core';
 import InputField from '../../components/InputField';
 
-import {AuthContext} from '../../context/AuthContext';
-
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 
-export default function LoginScreen({navigation}) {
-  const {login} = useContext(AuthContext);
-
+export default function SignUpScreen({navigation}) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const userCollection = firestore().collection('users');
 
   const showToast = (message: string) => {
     ToastAndroid.show(message, ToastAndroid.LONG);
   };
 
-  async function signIn(emailId: string, password: string) {
+  function isValidation(name: string, email: string, password: string) {
+    if (name == '') {
+      showToast('Name required');
+      return false;
+    }
+
+    if (email == '') {
+      showToast('Email required');
+      return false;
+    }
+
+    if (password == '') {
+      showToast('Password required');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function signUp(email: string, password: string) {
     await auth()
-      .signInWithEmailAndPassword(emailId, password)
+      .createUserWithEmailAndPassword(email, password)
       .then(userCredential => {
         const user = userCredential.user;
-        AsyncStorage.setItem('authStatus', 'success');
-        login();
+        console.log(user);
+        saveUserDetails(name, email, user.uid);
       })
       .catch(error => {
-        console.error(error);
-        showToast('Sign In failed');
+        console.error(`signUp: ${error}`);
+      });
+  }
+
+  async function saveUserDetails(name: string, email: string, id: string) {
+    const data = {
+      id: id,
+      name: name,
+      email: email,
+    };
+    await userCollection
+      .doc(id)
+      .set(data)
+      .then(() => {
+        navigation.goBack();
+      })
+      .catch(error => {
+        showToast('Unable to save user details');
+        console.error(`saveUserDetails: ${error}`);
       });
   }
 
   return (
     <View>
       <View style={styles.centerItem}>
-        <Text style={styles.heading}>Login</Text>
+        <Text style={styles.heading}>Sign Up</Text>
       </View>
+
+      <InputField
+        label="Name"
+        value={name}
+        onChangeText={setName}
+        keyboardType="default"
+        secureTextEntry={false}
+        icon={
+          <Ionicons
+            name="person-outline"
+            size={20}
+            color="#666"
+            style={{marginRight: 5}}
+          />
+        }
+      />
 
       <InputField
         label="Email Id"
@@ -83,9 +135,13 @@ export default function LoginScreen({navigation}) {
 
       <View style={styles.signInButton}>
         <Button
-          title="Sign In"
+          title="Sign Up"
           onPress={() => {
-            signIn(email, password);
+            if (!isValidation(name, email, password)) {
+              return;
+            }
+
+            signUp(email, password);
           }}
         />
       </View>
@@ -98,13 +154,13 @@ export default function LoginScreen({navigation}) {
           alignItems: 'center',
           flexDirection: 'row',
         }}>
-        <Text style={{fontSize: 16}}>Didn't have an account?</Text>
+        <Text style={{fontSize: 16}}>Already have an account?</Text>
         <TouchableOpacity
           style={{marginStart: 8}}
           onPress={() => {
-            navigation.navigate('SignUp');
+            navigation.goBack();
           }}>
-          <Text style={{fontSize: 16, color: 'blue'}}>Sign Up</Text>
+          <Text style={{fontSize: 16, color: 'blue'}}>Sign In</Text>
         </TouchableOpacity>
       </View>
     </View>

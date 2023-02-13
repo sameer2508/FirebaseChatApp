@@ -1,29 +1,23 @@
 import {View, Text, Button, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import InputField from '../../components/InputField';
+import InputField from '../../../components/InputField';
 
 import auth from '@react-native-firebase/auth';
 
 export default function PhoneLoginScreen({navigation}) {
-  const [mobileNumber, setMobileNumber] = useState('8969437694');
-
-  const [confirm, setConfirm] = useState(null);
-
-  const [code, setCode] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('9934298121');
 
   async function signInWithPhoneNumber(phoneNumber: string) {
     const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
     console.log('confirmation: ' + confirmation);
-    if(confirmation!=null){
-      navigation.navigate('VerifyOtp',{
-        confirmation:confirmation
-      })
-    }
-    else{
-      console.error("Send otp failed")
+    if (confirmation != null) {
+      navigation.navigate('VerifyOtp', {
+        confirmation: confirmation,
+      });
+    } else {
+      console.error('Send otp failed');
     }
   }
 
@@ -50,9 +44,12 @@ export default function PhoneLoginScreen({navigation}) {
       />
 
       <View style={styles.signInButton}>
-        <Button title="Send Otp" onPress={() => {
-          signInWithPhoneNumber(`+91 ${mobileNumber}`)
-        }} />
+        <Button
+          title="Send Otp"
+          onPress={() => {
+            signInWithPhoneNumber(`+91 ${mobileNumber}`);
+          }}
+        />
       </View>
     </View>
   );
